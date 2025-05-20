@@ -34,7 +34,7 @@ class HomeCubit extends Cubit<HomeState> {
       Map<int, List<PhotoResponse>> groupedByAlbum = groupPhotosByAlbum(
         cachedPhotos,
       );
-      emit(state.copyWith(albums: cachedAlbums,groupedPhotosByAlbum:groupedByAlbum));
+      emit(state.copyWith(albums: cachedAlbums,fakeAlbums : [cachedAlbums.last, ...cachedAlbums, cachedAlbums.first] ,groupedPhotosByAlbum:groupedByAlbum));
       updateDataSilentlyIfNeeded();
     }else {
       await fetchAllHomeData();
@@ -75,7 +75,7 @@ class HomeCubit extends Cubit<HomeState> {
       if (response.statusCode == 200) {
         List<AlbumResponse> albums = albumResponseFromJson(response.body);
         await AlbumCacheManager.saveAlbums(albums);
-        emit(state.copyWith(albums: albums));
+        emit(state.copyWith(albums: albums, fakeAlbums: [albums.last, ...albums,albums.first]));
       } else {
         print('Failed to load albums. Status code: ${response.statusCode}');
       }

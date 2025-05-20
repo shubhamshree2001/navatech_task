@@ -17,7 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollControllerVertical;
   final Map<int, ScrollController> _horizontalControllers = {};
   final Map<int, bool> _isHorizontalAnimating = {};
-  bool _isAnimatingVertical = false;
 
   void updateDataNeeded() {
     context.read<HomeCubit>().updateDataSilentlyIfNeeded();
@@ -40,19 +39,47 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // Initialize vertical scroll controller
+    final HomeCubit homeCubit = context.read<HomeCubit>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollControllerVertical.hasClients) {
+        // Scroll to the actual first item (index 1)
+        _scrollToIndexVertical(1, homeCubit.state.fakeAlbums.length);
+      }
+    });
     _scrollControllerVertical =
         ScrollController()..addListener(_handleVerticalScroll);
   }
 
-  void _animateVertical(double target) async {
-    _isAnimatingVertical = true;
-    await _scrollControllerVertical.animateTo(
-      target,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-    _isAnimatingVertical = false;
+  void _handleVerticalScroll() {
+    final HomeCubit homeCubit = context.read<HomeCubit>();
+    if (!_scrollControllerVertical.hasClients) return;
+    final position = _scrollControllerVertical.position;
+    if (!position.atEdge) return;
+    final offset = position.pixels;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Top: user scrolled to fake first item
+      if (offset <= position.minScrollExtent + 10) {
+        // Jump to actual last item (original.length)
+        _scrollToIndexVertical(
+          homeCubit.state.albums.length,
+          homeCubit.state.fakeAlbums.length,
+        );
+      }
+      // Bottom: user scrolled to fake last item
+      else if (offset >= position.maxScrollExtent - 10) {
+        // Jump to actual first item (index 1)
+        _scrollToIndexVertical(1, homeCubit.state.fakeAlbums.length);
+      }
+    });
   }
+
+  void _scrollToIndexVertical(int index, int fakeAlbumLength) {
+    final position = _scrollControllerVertical.position;
+    final targetOffset =
+        position.maxScrollExtent * index / (fakeAlbumLength - 1);
+    _scrollControllerVertical.jumpTo(targetOffset);
+  }
+
 
   void _animateHorizontal(int albumId, double target) async {
     _isHorizontalAnimating[albumId] = true;
@@ -62,20 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
       curve: Curves.easeInOut,
     );
     _isHorizontalAnimating[albumId] = false;
-  }
-
-  void _handleVerticalScroll() {
-    if (!_scrollControllerVertical.hasClients || _isAnimatingVertical) return;
-
-    final offset = _scrollControllerVertical.offset;
-    final position = _scrollControllerVertical.position;
-    const threshold = 50.0;
-
-    if (offset <= position.minScrollExtent + threshold) {
-      _animateVertical(position.maxScrollExtent - threshold);
-    } else if (offset >= position.maxScrollExtent - threshold) {
-      _animateVertical(position.minScrollExtent + threshold);
-    }
   }
 
   ScrollController _getOrCreateHorizontalController(int albumId) {
@@ -117,23 +130,27 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         List<AlbumResponse> albums = homeCubit.state.albums;
+        List<AlbumResponse> fakeAlbums = homeCubit.state.fakeAlbums;
         return Scaffold(
           appBar: AppBar(title: Text('Albums with Photos')),
           body:
               albums.isEmpty || homeCubit.state.isLoading
                   ? Center(child: CircularProgressIndicator())
-                  : albumsListWidget(albums, homeCubit),
+                  : albumsListWidget(fakeAlbums, homeCubit),
         );
       },
     );
   }
 
-  Widget albumsListWidget(List<AlbumResponse> albums, HomeCubit homeCubit) {
+  Widget albumsListWidget(
+    List<AlbumResponse> fakeAlbums,
+    HomeCubit homeCubit,
+  ) {
     return ListView.builder(
       controller: _scrollControllerVertical,
-      itemCount: albums.length,
+      itemCount: fakeAlbums.length,
       itemBuilder: (context, index) {
-        final album = albums[index];
+        final album = fakeAlbums[index];
         final List<PhotoResponse> photos =
             homeCubit.state.groupedPhotosByAlbum?[album.id] ?? [];
         final int photosLength = photos.length;

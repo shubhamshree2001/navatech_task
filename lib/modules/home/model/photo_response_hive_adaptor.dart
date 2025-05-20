@@ -3,7 +3,7 @@ import 'photo_response.dart';
 
 class PhotoResponseAdapter extends TypeAdapter<PhotoResponse> {
   @override
-  final int typeId = 1; // Unique typeId (different from AlbumResponse's 0)
+  final int typeId = 1;
 
   @override
   PhotoResponse read(BinaryReader reader) {

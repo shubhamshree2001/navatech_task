@@ -3,7 +3,7 @@ import 'album_response.dart';
 
 class AlbumResponseAdapter extends TypeAdapter<AlbumResponse> {
   @override
-  final int typeId = 0; // Unique ID for this adapter
+  final int typeId = 0;
 
   @override
   AlbumResponse read(BinaryReader reader) {

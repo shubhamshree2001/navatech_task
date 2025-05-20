@@ -19,6 +19,8 @@ abstract class _$HomeStateCWProxy {
 
   HomeState lastUpdatedTime(DateTime? lastUpdatedTime);
 
+  HomeState fakeAlbums(List<AlbumResponse> fakeAlbums);
+
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `HomeState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -31,6 +33,7 @@ abstract class _$HomeStateCWProxy {
     List<AlbumResponse> albums,
     Map<int, List<PhotoResponse>>? groupedPhotosByAlbum,
     DateTime? lastUpdatedTime,
+    List<AlbumResponse> fakeAlbums,
   });
 }
 
@@ -59,6 +62,10 @@ class _$HomeStateCWProxyImpl implements _$HomeStateCWProxy {
       this(lastUpdatedTime: lastUpdatedTime);
 
   @override
+  HomeState fakeAlbums(List<AlbumResponse> fakeAlbums) =>
+      this(fakeAlbums: fakeAlbums);
+
+  @override
   /// This function **does support** nullification of nullable fields. All `null` values passed to `non-nullable` fields will be ignored. You can also use `HomeState(...).copyWith.fieldName(...)` to override fields one at a time with nullification support.
   ///
   /// Usage
@@ -71,6 +78,7 @@ class _$HomeStateCWProxyImpl implements _$HomeStateCWProxy {
     Object? albums = const $CopyWithPlaceholder(),
     Object? groupedPhotosByAlbum = const $CopyWithPlaceholder(),
     Object? lastUpdatedTime = const $CopyWithPlaceholder(),
+    Object? fakeAlbums = const $CopyWithPlaceholder(),
   }) {
     return HomeState(
       isLoading:
@@ -98,6 +106,11 @@ class _$HomeStateCWProxyImpl implements _$HomeStateCWProxy {
               ? _value.lastUpdatedTime
               // ignore: cast_nullable_to_non_nullable
               : lastUpdatedTime as DateTime?,
+      fakeAlbums:
+          fakeAlbums == const $CopyWithPlaceholder()
+              ? _value.fakeAlbums
+              // ignore: cast_nullable_to_non_nullable
+              : fakeAlbums as List<AlbumResponse>,
     );
   }
 }
