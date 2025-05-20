@@ -4,9 +4,13 @@
 
 import 'dart:convert';
 
-List<PhotoResponse> photoResponseFromJson(String str) => List<PhotoResponse>.from(json.decode(str).map((x) => PhotoResponse.fromJson(x)));
+List<PhotoResponse> photoResponseFromJson(String str) =>
+    List<PhotoResponse>.from(
+      json.decode(str).map((x) => PhotoResponse.fromJson(x)),
+    );
 
-String photoResponseToJson(List<PhotoResponse> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String photoResponseToJson(List<PhotoResponse> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class PhotoResponse {
   int? albumId;

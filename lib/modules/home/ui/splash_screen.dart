@@ -28,11 +28,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> insideInitCalledFnc(HomeCubit homeCubit) async {
-    await Future.wait([
-    homeCubit.loadAndCacheAlbumsAndPhotos()
-    ]);
+    await Future.wait([homeCubit.loadAndCacheAlbumsAndPhotos()]);
     if (!hasNavigated && mounted) {
-        _navigate();
+      _navigate();
     }
   }
 
@@ -48,10 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Text(
           'NavaTech',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
         ),
       ),
     );

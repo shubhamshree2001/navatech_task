@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+
 import 'album_response.dart';
 
 class AlbumResponseAdapter extends TypeAdapter<AlbumResponse> {

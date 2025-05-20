@@ -3,16 +3,15 @@ import 'package:get_storage/get_storage.dart';
 class AppStorage {
   final _box = GetStorage();
 
-
-
   Future<void> saveLastUpdatedDateTime() async {
     await _box.write(
-        NavaTechStorageKeys.lastUpdatedData, DateTime.now().toString());
+      NavaTechStorageKeys.lastUpdatedData,
+      DateTime.now().toString(),
+    );
   }
 
   Future<DateTime?> getLastUpdatedDateTime() async {
-    final dateString =
-    await _box.read(NavaTechStorageKeys.lastUpdatedData);
+    final dateString = await _box.read(NavaTechStorageKeys.lastUpdatedData);
     if (dateString != null) {
       return DateTime.tryParse(dateString);
     }

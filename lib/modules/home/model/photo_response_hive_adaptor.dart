@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+
 import 'photo_response.dart';
 
 class PhotoResponseAdapter extends TypeAdapter<PhotoResponse> {

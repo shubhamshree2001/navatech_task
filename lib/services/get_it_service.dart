@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:navatech_task/data/utils/app_storage.dart';
 import 'package:navatech_task/modules/home/model/album_respnse_hive_adaptor.dart';
@@ -20,9 +19,5 @@ Future<void> setup() async {
   getIt.registerLazySingleton(() => AppStorage());
 }
 
-
-
 /// Global Getters
 AppStorage get navaTechStorage => getIt.get<AppStorage>();
-
-

@@ -9,23 +9,18 @@ import 'package:navatech_task/modules/home/model/photo_response.dart';
 import 'package:navatech_task/services/get_it_service.dart';
 
 part 'home_cubit.g.dart';
-
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(const HomeState());
 
   void setIsLoading(bool isLoading) {
-    emit(
-      state.copyWith(
-        isLoading: isLoading,
-      ),
-    );
+    emit(state.copyWith(isLoading: isLoading));
   }
 
   Future<void> onPullDownRefresh() async {
-      await fetchAllHomeData();
-    }
+    await fetchAllHomeData();
+  }
 
   Future<void> loadAndCacheAlbumsAndPhotos() async {
     final cachedAlbums = AlbumCacheManager.loadAlbums();
@@ -34,19 +29,27 @@ class HomeCubit extends Cubit<HomeState> {
       Map<int, List<PhotoResponse>> groupedByAlbum = groupPhotosByAlbum(
         cachedPhotos,
       );
-      emit(state.copyWith(albums: cachedAlbums,fakeAlbums : [cachedAlbums.last, ...cachedAlbums, cachedAlbums.first] ,groupedPhotosByAlbum:groupedByAlbum));
+      emit(
+        state.copyWith(
+          albums: cachedAlbums,
+          fakeAlbums: [cachedAlbums.last, ...cachedAlbums, cachedAlbums.first],
+          groupedPhotosByAlbum: groupedByAlbum,
+        ),
+      );
       updateDataSilentlyIfNeeded();
-    }else {
+    } else {
       await fetchAllHomeData();
     }
   }
 
   Future<void> updateDataSilentlyIfNeeded() async {
-    final DateTime? lastUpdatedDateTime = await navaTechStorage.getLastUpdatedDateTime();
+    final DateTime? lastUpdatedDateTime =
+        await navaTechStorage.getLastUpdatedDateTime();
     emit(state.copyWith(lastUpdatedTime: lastUpdatedDateTime));
     final DateTime now = DateTime.now();
     final DateTime lastUpdated =
-        state.lastUpdatedTime ?? now.subtract(const Duration(hours: 1, seconds: 1));
+        state.lastUpdatedTime ??
+        now.subtract(const Duration(hours: 1, seconds: 1));
     final diff = now.difference(lastUpdated).inSeconds;
     if (diff >= 3600) {
       await fetchAllHomeData(true);
@@ -62,10 +65,10 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       await Future.wait(futures);
       navaTechStorage.saveLastUpdatedDateTime();
-       setIsLoading(false);
+      setIsLoading(false);
     } catch (e) {
       print('An error occurred while fetching home data: $e');
-       setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -75,7 +78,12 @@ class HomeCubit extends Cubit<HomeState> {
       if (response.statusCode == 200) {
         List<AlbumResponse> albums = albumResponseFromJson(response.body);
         await AlbumCacheManager.saveAlbums(albums);
-        emit(state.copyWith(albums: albums, fakeAlbums: [albums.last, ...albums,albums.first]));
+        emit(
+          state.copyWith(
+            albums: albums,
+            fakeAlbums: [albums.last, ...albums, albums.first],
+          ),
+        );
       } else {
         print('Failed to load albums. Status code: ${response.statusCode}');
       }

@@ -80,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollControllerVertical.jumpTo(targetOffset);
   }
 
-
   void _animateHorizontal(int albumId, double target) async {
     _isHorizontalAnimating[albumId] = true;
     await _horizontalControllers[albumId]?.animateTo(
@@ -142,10 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget albumsListWidget(
-    List<AlbumResponse> fakeAlbums,
-    HomeCubit homeCubit,
-  ) {
+  Widget albumsListWidget(List<AlbumResponse> fakeAlbums, HomeCubit homeCubit) {
     return ListView.builder(
       controller: _scrollControllerVertical,
       itemCount: fakeAlbums.length,

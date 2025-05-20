@@ -12,10 +12,10 @@ class HomeState extends Equatable {
   const HomeState({
     this.isLoading = false,
     this.error,
-    this.albums = const[],
+    this.albums = const [],
     this.groupedPhotosByAlbum,
     this.lastUpdatedTime,
-    this.fakeAlbums = const[],
+    this.fakeAlbums = const [],
   });
 
   @override

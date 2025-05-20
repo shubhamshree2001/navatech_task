@@ -24,23 +24,19 @@ class NavaTechApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (BuildContext context) => HomeCubit(),
-        ),
-      ],
+      providers: [BlocProvider(create: (BuildContext context) => HomeCubit())],
       child: ScreenUtilInit(
         minTextAdapt: true,
         splitScreenMode: true,
         designSize: const Size(360, 800),
         enableScaleText: () => false,
         builder: (context, child) {
-              return MaterialApp(
-                title: 'Nava Tech',
-                debugShowCheckedModeBanner: false,
-                initialRoute: Routes.splashScreen,
-                routes: Routes.routes,
-              );
+          return MaterialApp(
+            title: 'Nava Tech',
+            debugShowCheckedModeBanner: false,
+            initialRoute: Routes.splashScreen,
+            routes: Routes.routes,
+          );
         },
       ),
     );
