@@ -14,9 +14,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late ScrollController _scrollControllerVertical;
+  static const int _infiniteIndex = 100000;
   final Map<int, ScrollController> _horizontalControllers = {};
-  final Map<int, bool> _isHorizontalAnimating = {};
 
   void updateDataNeeded() {
     context.read<HomeCubit>().updateDataSilentlyIfNeeded();
@@ -38,85 +37,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize vertical scroll controller
     final HomeCubit homeCubit = context.read<HomeCubit>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollControllerVertical.hasClients) {
-        // Scroll to the actual first item (index 1)
-        _scrollToIndexVertical(1, homeCubit.state.fakeAlbums.length);
-      }
-    });
-    _scrollControllerVertical =
-        ScrollController()..addListener(_handleVerticalScroll);
-  }
-
-  void _handleVerticalScroll() {
-    final HomeCubit homeCubit = context.read<HomeCubit>();
-    if (!_scrollControllerVertical.hasClients) return;
-    final position = _scrollControllerVertical.position;
-    if (!position.atEdge) return;
-    final offset = position.pixels;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Top: user scrolled to fake first item
-      if (offset <= position.minScrollExtent + 10) {
-        // Jump to actual last item (original.length)
-        _scrollToIndexVertical(
-          homeCubit.state.albums.length,
-          homeCubit.state.fakeAlbums.length,
+      for (int i = 0; i < homeCubit.state.albums.length; i++) {
+        _horizontalControllers[i] = ScrollController(
+          initialScrollOffset: _infiniteIndex * 100,
         );
       }
-      // Bottom: user scrolled to fake last item
-      else if (offset >= position.maxScrollExtent - 10) {
-        // Jump to actual first item (index 1)
-        _scrollToIndexVertical(1, homeCubit.state.fakeAlbums.length);
-      }
-    });
-  }
-
-  void _scrollToIndexVertical(int index, int fakeAlbumLength) {
-    final position = _scrollControllerVertical.position;
-    final targetOffset =
-        position.maxScrollExtent * index / (fakeAlbumLength - 1);
-    _scrollControllerVertical.jumpTo(targetOffset);
-  }
-
-  void _animateHorizontal(int albumId, double target) async {
-    _isHorizontalAnimating[albumId] = true;
-    await _horizontalControllers[albumId]?.animateTo(
-      target,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
-    _isHorizontalAnimating[albumId] = false;
-  }
-
-  ScrollController _getOrCreateHorizontalController(int albumId) {
-    return _horizontalControllers.putIfAbsent(albumId, () {
-      final controller = ScrollController();
-      _isHorizontalAnimating[albumId] = false;
-
-      controller.addListener(() {
-        final isAnimating = _isHorizontalAnimating[albumId] ?? false;
-        if (!controller.hasClients || isAnimating) return;
-
-        final offset = controller.offset;
-        final position = controller.position;
-        const threshold = 50.0;
-
-        if (offset <= position.minScrollExtent + threshold) {
-          _animateHorizontal(albumId, position.maxScrollExtent - threshold);
-        } else if (offset >= position.maxScrollExtent - threshold) {
-          _animateHorizontal(albumId, position.minScrollExtent + threshold);
-        }
-      });
-
-      return controller;
     });
   }
 
   @override
   void dispose() {
-    _scrollControllerVertical.dispose();
+    //_scrollControllerVertical.dispose();
     for (var c in _horizontalControllers.values) {
       c.dispose();
     }
@@ -143,18 +76,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget albumsListWidget(List<AlbumResponse> fakeAlbums, HomeCubit homeCubit) {
     return ListView.builder(
-      controller: _scrollControllerVertical,
-      itemCount: fakeAlbums.length,
+      controller: ScrollController(initialScrollOffset: _infiniteIndex * 120),
+      itemExtent: 120,
       itemBuilder: (context, index) {
-        final album = fakeAlbums[index];
+        final vIndex = index % homeCubit.state.albums.length;
+        final album = homeCubit.state.albums[vIndex];
         final List<PhotoResponse> photos =
             homeCubit.state.groupedPhotosByAlbum?[album.id] ?? [];
         final int photosLength = photos.length;
-        //Controller per album (dynamic)
-        final controller =
-            album.id != null
-                ? _getOrCreateHorizontalController(album.id!)
-                : ScrollController();
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 12.w, horizontal: 16.w),
           child: Column(
@@ -175,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Text(
                       album.title ?? '',
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -184,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               Gap(8.h),
-              photosListWidget(controller, photosLength, photos),
+              photosListWidget(photosLength, photos, vIndex),
             ],
           ),
         );
@@ -193,18 +123,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget photosListWidget(
-    ScrollController controller,
     int photosLength,
     List<PhotoResponse> photos,
+    int vIndex,
   ) {
     return SizedBox(
-      height: 121.w,
+      height: 55.w,
       child: ListView.builder(
-        controller: controller,
+        controller: _horizontalControllers.putIfAbsent(
+          vIndex,
+          () => ScrollController(initialScrollOffset: _infiniteIndex * 100),
+        ),
         scrollDirection: Axis.horizontal,
-        itemCount: photosLength,
+        itemExtent: 100,
         itemBuilder: (context, photoIndex) {
-          final photo = photos[photoIndex];
+          final hIndex = photoIndex % photosLength;
+          final photo = photos[hIndex];
           return Padding(
             padding: EdgeInsets.only(right: 16.w),
             child: Container(
@@ -212,8 +146,6 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey, width: 1.w),
               ),
-              width: 100.w,
-              height: 121.w,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     photo.title ?? "",
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 5,
+                    maxLines: 2,
                   ),
                 ],
               ),
