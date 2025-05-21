@@ -49,7 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    //_scrollControllerVertical.dispose();
     for (var c in _horizontalControllers.values) {
       c.dispose();
     }
